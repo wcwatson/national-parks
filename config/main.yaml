@@ -1,0 +1,13 @@
+# Main configuration file for project
+
+source_capta:
+  date_range:
+    min: 1979
+    max: 2021
+  nps:
+    monthly_visitors:
+      base_url: https://irma.nps.gov/STATS/SSRSReports/Park%20Specific%20Reports/Recreation%20Visitors%20By%20Month%20(1979%20-%20Last%20Calendar%20Year)?Park={park}
+      output_path: capta/source/nps_monthly_visitors.csv
+    visitor_use:
+      base_url: https://irma.nps.gov/STATS/SSRSReports/Park%20Specific%20Reports/Summary%20of%20Visitor%20Use%20By%20Month%20and%20Year%20(1979%20-%20Last%20Calendar%20Year)?Park={park}
+      output_path: capta/source/nps_visitor_use.csv

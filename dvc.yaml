@@ -1,0 +1,9 @@
+stages:
+  refresh_source:
+    cmd: python src/refresh_source_capta.py
+    deps:
+    - src/np_scraper.py
+    - src/np_source_captaset.py
+    - src/refresh_source_capta.py
+    outs:
+    - capta/source
