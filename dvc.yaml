@@ -5,5 +5,6 @@ stages:
     - src/np_scraper.py
     - src/np_source_captaset.py
     - src/refresh_source_capta.py
+    - config/source_capta
     outs:
-    - capta/source
+    - capta/source/nps_monthly_visitors.csv

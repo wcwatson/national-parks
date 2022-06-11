@@ -1,8 +1,6 @@
 """Runner script to refresh source capta."""
 
-import argparse
 import logging
-import os
 import yaml
 
 import hydra
@@ -10,18 +8,6 @@ from hydra.utils import to_absolute_path
 
 from np_source_captaset import NPSCaptaset
 from utils import log_job_succeeded, setup_logging
-
-
-def parse_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        '--park_set',
-        type=str,
-        choices=['all', 'sample'],
-        default='sample',
-        help='whether to run on "all" parks or a "sample" (the default)',
-    )
-    return parser.parse_args()
 
 
 def _parse_park_name(park_name):
@@ -37,14 +23,13 @@ def _parse_park_name(park_name):
     return ' '.join(park_name_split[:-1]), park_name_split[-1]
 
 
-@hydra.main(config_path='config', config_name='main')
+@hydra.main(config_path='../config', config_name='main', version_base='1.2')
 def main(config):
     setup_logging('refresh_source_capta')
-    args = parse_args()
-    logging.info(f'Refreshing source capta for {args.park_set} parks')
-    park_list_fn = os.path.join(
-        'config', 'source_capta', f'{args.park_set}_parks.yml'
-    )
+    park_set = 'all' if config.source_capta.refresh_all_parks else 'sample'
+    logging.info(f'Refreshing source capta for {park_set} parks')
+    park_list_subconf = config.source_capta.park_sets
+    park_list_fn = to_absolute_path(park_list_subconf[park_set])
     with open(park_list_fn, 'r') as fi:
         parks = yaml.safe_load(fi)
 

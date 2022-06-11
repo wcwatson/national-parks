@@ -3,9 +3,9 @@
 from copy import deepcopy
 import requests
 import time
+import yaml
 
 from bs4 import BeautifulSoup
-import hydra
 import pandas as pd
 
 _ORDERED_MONTHLY_VISITOR_COLUMNS = [
@@ -17,11 +17,13 @@ _ORDERED_MONTHLY_VISITOR_COLUMNS = [
     'visitors',
 ]
 
+with open('config/source_capta/park_types.yaml', 'r') as fi:
+    _PARK_TYPES = yaml.safe_load(fi)
 
-@hydra.main(config_path='config/source_capta', config_name='park_types')
-def _get_long_park_type(config, park_type):
+
+def _get_long_park_type(park_type):
     """Simple helper function to streamline class methods."""
-    return config.get(park_type)
+    return _PARK_TYPES.get(park_type)
 
 
 def _scrape_url(url, sleep_t=1):
@@ -130,6 +132,10 @@ class NationalParkScraper(object):
                     var_name='Month',
                     value_name='Visitors'
                 )
+                for c in ['Year', 'Visitors']:
+                    capta_df[c] = capta_df[c].apply(
+                        pd.to_numeric, errors='ignore'
+                    )
                 # The only null values will be for months when no capta are yet
                 # available, so they can be safely dropped
                 capta_df = capta_df.dropna()
@@ -156,7 +162,7 @@ class NationalParkScraper(object):
             raise AttributeError('Monthly visitors have not been scraped')
         return_df = deepcopy(self._monthly_visitors)
         return_df = return_df.rename(
-            columns=[c.lower() for c in return_df.columns]
+            columns={c: c.lower() for c in return_df.columns}
         )
         return_df['full_park_name'] = self._get_full_name()
         return_df['park_name'] = self.name

@@ -1,0 +1,22 @@
+schema: '2.0'
+stages:
+  refresh_source:
+    cmd: python src/refresh_source_capta.py
+    deps:
+    - path: config/source_capta
+      md5: 0f0de40904b24e11c79766c93b21166b.dir
+      size: 11174
+      nfiles: 3
+    - path: src/np_scraper.py
+      md5: 27ed79ec817e604a7401b713aa9399d7
+      size: 6468
+    - path: src/np_source_captaset.py
+      md5: 67a4a3f83232f440f0f0e972629ce308
+      size: 2231
+    - path: src/refresh_source_capta.py
+      md5: c2b3f49609259e234b8a963a23bbbf72
+      size: 2122
+    outs:
+    - path: capta/source/nps_monthly_visitors.csv
+      md5: 3986cd3fff6c7bcab2514316d7fb4faf
+      size: 196771
