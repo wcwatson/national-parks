@@ -1,0 +1,11 @@
+stages:
+  refresh_source:
+    cmd: python src/refresh_source_capta.py
+    deps:
+    - src/np_scraper.py
+    - src/np_source_captaset.py
+    - src/refresh_source_capta.py
+    - config/source_capta
+    outs:
+    - capta/source/nps_monthly_visitors.csv
+#    - capta/source/nps_visitor_use.csv

@@ -1,4 +1,7 @@
 .idea/
+.wdm/
+logs/
+outputs/
 
 # github boilerplate .gitignore follows
 
