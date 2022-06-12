@@ -9,11 +9,7 @@ def now():
 
 
 def setup_logging(step_name):
-    logging.basicConfig(
-        filename=f'logs/{step_name}_{now()}.log',
-        encoding='utf-8',
-        level=logging.INFO
-    )
+    logging.basicConfig(level=logging.INFO)
     logging.info(f'Logging set up for step - {step_name}')
 
 

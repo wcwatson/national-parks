@@ -6,16 +6,12 @@ import time
 import yaml
 
 from bs4 import BeautifulSoup
-import pandas as pd
+# from selenium import webdriver
+# from selenium.webdriver.chrome.service import Service
+# from selenium.webdriver.common.by import By
+# from webdriver_manager.chrome import ChromeDriverManager
 
-_ORDERED_MONTHLY_VISITOR_COLUMNS = [
-    'full_park_name',
-    'park_name',
-    'park_type',
-    'year',
-    'month',
-    'visitors',
-]
+import pandas as pd
 
 with open('config/source_capta/park_types.yaml', 'r') as fi:
     _PARK_TYPES = yaml.safe_load(fi)
@@ -57,9 +53,7 @@ def _bs_table_to_pandas(html_table, header=True):
 
 
 class NationalParkScraper(object):
-    """Capta storage class for an individual national park.
-
-    [longer description]
+    """Webscraping and capta storage class for an individual national park.
 
     Attributes:
         name (str): the abbreviated name or 'code' for a park (e.g., 'ACAD')
@@ -93,7 +87,7 @@ class NationalParkScraper(object):
         return f'{self.long_name} {self.long_park_type}'
 
     def scrape_monthly_visitors(self, park_url, min_year, max_year):
-        """Scrapes monthly visitors from the relevant NPS site.
+        """Scrapes and caches monthly visitors from the relevant NPS site.
 
         Args:
             park_url (str): the URL for retrieving monthly visitor data
@@ -124,21 +118,13 @@ class NationalParkScraper(object):
                 # The 'Total' column is redundant information and can always be
                 # recalculated, so there's no need to store it
                 capta_df = capta_df.drop(columns='Total')
-                # Melting the DataFrame creates an easier-to-manipulate data
-                # structure
-                capta_df = pd.melt(
-                    capta_df,
-                    id_vars=['Year'],
-                    var_name='Month',
-                    value_name='Visitors'
-                )
-                for c in ['Year', 'Visitors']:
-                    capta_df[c] = capta_df[c].apply(
-                        pd.to_numeric, errors='ignore'
+                # Convert to numeric where possible, catching numbers written
+                # with commas
+                capta_df = capta_df.apply(
+                    lambda x: pd.to_numeric(
+                        x.astype(str).str.replace(',', ''), errors='ignore'
                     )
-                # The only null values will be for months when no capta are yet
-                # available, so they can be safely dropped
-                capta_df = capta_df.dropna()
+                )
                 # Filter out any years outside those specified in the
                 # configuration files
                 capta_df = capta_df.query(f'{min_year} <= Year <= {max_year}')
@@ -161,12 +147,22 @@ class NationalParkScraper(object):
         if self._monthly_visitors is None:
             raise AttributeError('Monthly visitors have not been scraped')
         return_df = deepcopy(self._monthly_visitors)
-        return_df = return_df.rename(
-            columns={c: c.lower() for c in return_df.columns}
-        )
         return_df['full_park_name'] = self._get_full_name()
         return_df['park_name'] = self.name
         return_df['park_type'] = self.park_type
-        return return_df.reindex(columns=_ORDERED_MONTHLY_VISITOR_COLUMNS)
+        return return_df
 
-    # TODO (WW): usage
+    def scrape_monthly_use(self, park_url, min_year, max_year):
+        """Scrapes and caches usage information from the relevant NPS site.
+
+        Args:
+            park_url (str): the URL for retrieving monthly visitor data
+            min_year (int): the earliest year of capta to retrieve
+            max_year (int): the latest year of capta to retrieve
+
+        Raises:
+            ValueError: if no HTTP response is received
+            KeyError: if no capta table can be located in the response
+        """
+        # driver = webdriver.Chrome(ChromeDriverManager(path='.').install())
+        # TODO (WW): for another feature branch
