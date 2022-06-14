@@ -1,4 +1,4 @@
-"""Runner script to refresh source capta."""
+"""Driver script to refresh source capta."""
 
 import logging
 import yaml
@@ -7,44 +7,35 @@ import hydra
 from hydra.utils import to_absolute_path
 
 from np_source_captaset import NPSCaptaset
-from utils import log_job_succeeded, setup_logging
-
-
-def _parse_park_name(park_name):
-    """Helper function to parse a park name.
-
-    Args:
-        park_name (str): a park name as found in the configuration files
-
-    Returns:
-        str, str: the long park name and the park type
-    """
-    park_name_split = park_name.split(' ')
-    return ' '.join(park_name_split[:-1]), park_name_split[-1]
+from utils import (
+    log_job_succeeded,
+    maybe_create_capta_directory,
+    setup_logging,
+    parse_park_name
+)
 
 
 @hydra.main(config_path='../config', config_name='main', version_base='1.2')
 def main(config):
     setup_logging('refresh_source_capta')
-    park_set = 'all' if config.source_capta.refresh_all_parks else 'sample'
+    maybe_create_capta_directory('source')
+    park_set = 'all' if config.refresh_source.refresh_all_parks else 'sample'
     logging.info(f'Refreshing source capta for {park_set} parks')
-    park_list_subconf = config.source_capta.park_sets
+    park_list_subconf = config.refresh_source.park_sets
     park_list_fn = to_absolute_path(park_list_subconf[park_set])
     with open(park_list_fn, 'r') as fi:
         parks = yaml.safe_load(fi)
 
-    # Scrape NPS websites
+    # Scrape NPS websites for all source capta
     npsc = NPSCaptaset(
-        min_year=config.source_capta.date_range.min,
-        max_year=config.source_capta.date_range.max,
-        visitor_base_url=config.source_capta.nps.monthly_visitors.base_url,
+        min_year=config.refresh_source.date_range.min,
+        max_year=config.refresh_source.date_range.max,
+        visitor_base_url=config.refresh_source.nps.monthly_visitors.base_url,
     )
     for park_name, full_park_name in parks.items():
-        long_park_name, park_type = _parse_park_name(full_park_name)
+        _, park_type = parse_park_name(full_park_name)
         try:
-            npsc.add_and_populate_park(
-                name=park_name, long_name=long_park_name, park_type=park_type
-            )
+            npsc.add_and_populate_park(name=park_name, park_type=park_type)
             logging.info(f'Successfully added source capta for {park_name}')
         except (KeyError, ValueError) as e:
             logging.info(
@@ -52,11 +43,10 @@ def main(config):
             )
             continue
     logging.info('Park source capta refreshed, writing outputs')
-    npsc.write_source_capta(
-        visitors_fp=to_absolute_path(
-            config.source_capta.nps.monthly_visitors.output_path
-        )
+    monthly_visitors_fp = to_absolute_path(
+        config.refresh_source.nps.monthly_visitors.output_path
     )
+    npsc.write_source_capta(monthly_visitors_fp)
 
     # TODO (WW): weather capta?
 

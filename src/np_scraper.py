@@ -3,7 +3,6 @@
 from copy import deepcopy
 import requests
 import time
-import yaml
 
 from bs4 import BeautifulSoup
 # from selenium import webdriver
@@ -12,14 +11,6 @@ from bs4 import BeautifulSoup
 # from webdriver_manager.chrome import ChromeDriverManager
 
 import pandas as pd
-
-with open('config/source_capta/park_types.yaml', 'r') as fi:
-    _PARK_TYPES = yaml.safe_load(fi)
-
-
-def _get_long_park_type(park_type):
-    """Simple helper function to streamline class methods."""
-    return _PARK_TYPES.get(park_type)
 
 
 def _scrape_url(url, sleep_t=1):
@@ -57,34 +48,17 @@ class NationalParkScraper(object):
 
     Attributes:
         name (str): the abbreviated name or 'code' for a park (e.g., 'ACAD')
-        long_name (str): the full, human-legible name for a park (e.g.,
-            'Acadia')
         park_type (str): the type of park (must be listed in
             config/source_capta/park_types.yaml, e.g., 'NP')
-        long_park_type (str): the full name for the type of park (e.g.,
-            'National Park')
         _monthly_visitors (pd.DataFrame): a DataFrame (NB: use
             get_monthly_visitors() to retrieve capta associated with this
             object, do not retrieve it directly)
     """
 
-    def __init__(self, name, long_name, park_type):
-        # Data checks before initialization
-        long_park_type = _get_long_park_type(park_type)
-        if long_park_type is None:
-            raise ValueError(f'Unrecognized park type: {park_type}')
-        # Set attributes from parameters and lookups
+    def __init__(self, name, park_type):
         self.name = name
-        self.long_name = long_name
         self.park_type = park_type
-        self.long_park_type = long_park_type
         self._monthly_visitors = None
-
-    def _get_full_name(self):
-        """Returns a human-legible full name for the park (e.g., 'Acadia
-        National Park')
-        """
-        return f'{self.long_name} {self.long_park_type}'
 
     def scrape_monthly_visitors(self, park_url, min_year, max_year):
         """Scrapes and caches monthly visitors from the relevant NPS site.
@@ -147,7 +121,6 @@ class NationalParkScraper(object):
         if self._monthly_visitors is None:
             raise AttributeError('Monthly visitors have not been scraped')
         return_df = deepcopy(self._monthly_visitors)
-        return_df['full_park_name'] = self._get_full_name()
         return_df['park_name'] = self.name
         return_df['park_type'] = self.park_type
         return return_df
