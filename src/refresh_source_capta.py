@@ -7,12 +7,18 @@ import hydra
 from hydra.utils import to_absolute_path
 
 from np_source_captaset import NPSCaptaset
-from utils import log_job_succeeded, setup_logging, parse_park_name
+from utils import (
+    log_job_succeeded,
+    maybe_create_capta_directory,
+    setup_logging,
+    parse_park_name
+)
 
 
 @hydra.main(config_path='../config', config_name='main', version_base='1.2')
 def main(config):
     setup_logging('refresh_source_capta')
+    maybe_create_capta_directory('source')
     park_set = 'all' if config.refresh_source.refresh_all_parks else 'sample'
     logging.info(f'Refreshing source capta for {park_set} parks')
     park_list_subconf = config.refresh_source.park_sets

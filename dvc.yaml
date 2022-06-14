@@ -7,5 +7,12 @@ stages:
     - src/refresh_source_capta.py
     - config/source_capta
     outs:
-    - capta/source/nps_monthly_visitors.csv
-#    - capta/source/nps_visitor_use.csv
+    - capta/source
+  process:
+    cmd: python src/process_capta.py
+    deps:
+    - src/process_capta.py
+    - src/transformations.py
+    - config/processed_capta
+    outs:
+    - capta/processed

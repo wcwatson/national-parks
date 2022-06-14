@@ -8,15 +8,34 @@ stages:
       size: 11174
       nfiles: 3
     - path: src/np_scraper.py
-      md5: 63bebdc7a2aeedf6b337cb8669270a3d
-      size: 5591
+      md5: e47a7925965d6b69972becdf6d16468b
+      size: 5579
     - path: src/np_source_captaset.py
-      md5: e3ceeee9f0e8a86a76ef90e6f2cbeff5
-      size: 2487
+      md5: 50e0e9d98b10503b9bbc003747975f76
+      size: 2477
     - path: src/refresh_source_capta.py
-      md5: 4e8e6f0bb540164a6982c4b830590c02
-      size: 1767
+      md5: 071f82d6907514fd53bd9935d2feedcf
+      size: 1860
     outs:
-    - path: capta/source/nps_monthly_visitors.csv
-      md5: 69fe4e9ebd3b00aa0fd60e88576b40da
+    - path: capta/source
+      md5: 6917197345dde3c4424ae52b3f244580.dir
       size: 23993
+      nfiles: 1
+  process:
+    cmd: python src/process_capta.py
+    deps:
+    - path: config/processed_capta
+      md5: d751713988987e9331980363e24189ce.dir
+      size: 0
+      nfiles: 0
+    - path: src/process_capta.py
+      md5: 848115956539cbbe2fca04e2868dcc56
+      size: 1634
+    - path: src/transformations.py
+      md5: c5ddc13a2664c3b8af8474f6080a9247
+      size: 3330
+    outs:
+    - path: capta/processed
+      md5: 1d6a8db0d3266f0a87098823957f1799.dir
+      size: 63238
+      nfiles: 2

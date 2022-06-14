@@ -2,7 +2,10 @@
 
 import datetime
 import logging
+import os
 import yaml
+
+from hydra.utils import to_absolute_path
 
 
 def now():
@@ -16,6 +19,13 @@ def setup_logging(step_name):
 
 def log_job_succeeded():
     logging.info('JOB SUCCEEDED')
+
+
+def maybe_create_capta_directory(stage):
+    if stage not in ['source', 'processed']:
+        raise ValueError('Unrecognized stage')
+    abs_path = to_absolute_path(f'capta/{stage}')
+    os.makedirs(abs_path, exist_ok=True)
 
 
 with open('config/source_capta/park_types.yaml', 'r') as fi:
