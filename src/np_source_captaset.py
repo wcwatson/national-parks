@@ -23,10 +23,15 @@ class NPSCaptaset(object):
         self.visitor_base_url = visitor_base_url
         self.parks = {}
 
-    def add_and_populate_park(self, name, long_name, park_type):
-        park = NationalParkScraper(
-            name=name, long_name=long_name, park_type=park_type
-        )
+    def add_and_populate_park(self, name, park_type):
+        """Adds a populated NationalParkScraper object to the captaset.
+
+        Args:
+            name (str): the abbreviated name for a park (e.g., 'ACAD')
+            park_type (str): the type of park (must be listed in
+                config/source_capta/park_types.yaml, e.g., 'NP')
+        """
+        park = NationalParkScraper(name=name, park_type=park_type)
         park_url = self.visitor_base_url.replace('{park}', name)
         park.scrape_monthly_visitors(
             park_url=park_url, max_year=self.max_year, min_year=self.min_year
