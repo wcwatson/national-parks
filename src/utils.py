@@ -8,10 +8,6 @@ import yaml
 from hydra.utils import to_absolute_path
 
 
-def now():
-    return datetime.datetime.now().isoformat().replace(':', '-').split(".")[0]
-
-
 def setup_logging(step_name):
     logging.basicConfig(level=logging.INFO)
     logging.info(f'Logging set up for step - {step_name}')
@@ -19,6 +15,15 @@ def setup_logging(step_name):
 
 def log_job_succeeded():
     logging.info('JOB SUCCEEDED')
+
+
+def now():
+    return datetime.datetime.now().isoformat().replace(':', '-').split('.')[0]
+
+
+def ordinal(n):
+    suffixes = {1: 'st', 2: 'nd', 3: 'rd'}
+    return str(n) + suffixes.get(4 if 11 <= n % 100 < 14 else n % 10, 'th')
 
 
 def maybe_create_capta_directory(stage):

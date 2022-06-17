@@ -34,11 +34,11 @@ def _create_dt_pk(df, year_col, month_col, day_col=None):
     Returns:
         pd.DataFrame: a transformed copy of df
     """
-    # If no day column is given then create a dummy column set to the middle of
-    # the month
+    # If no day column is given then create a dummy column set to the beginning
+    # of the month
     if day_col is None:
         day_col = 'dummy_day'
-        df[day_col] = 15
+        df[day_col] = 1
     df = df.rename(
         columns={year_col: 'year', month_col: 'month', day_col: 'day'}
     )
@@ -57,29 +57,20 @@ def _identity(df):
 
 
 def _sum_by(df, by, summands):
-    """
+    """Wrapper function for summing columns via pandas groupby.
 
     Args:
-        df (pd.DataFrame):
-        by (list):
-        summands (list):
+        df (pd.DataFrame): a DataFrame
+        by (list): a list of column by which to group df
+        summands (list): a list of columns that should be aggregated by
+            summation
 
     Returns:
-
+        pd.DataFrame: a transformed copy of df
     """
     list_by = [b for b in by]
     list_summands = [s for s in summands]
     return df.groupby(by=list_by, as_index=False)[list_summands].sum()
-
-
-_ALLOWABLE_TRANSFORMATIONS = {
-    'columns_to_lowercase': _columns_to_lowercase,
-    'create_dt_pk': _create_dt_pk,
-    'identity': _identity,
-    'melt': pd.melt,
-    'pivot': pd.pivot,
-    'sum_by': _sum_by
-}
 
 
 class Transformation(object):
@@ -91,11 +82,18 @@ class Transformation(object):
     """
 
     def __init__(self, name, params=None):
-        # print(name, params, type(params))  # TODO (WW): delete
-        if name not in _ALLOWABLE_TRANSFORMATIONS:
+        _allowable_transformations = {
+            'columns_to_lowercase': _columns_to_lowercase,
+            'create_dt_pk': _create_dt_pk,
+            'identity': _identity,
+            'melt': pd.melt,
+            'pivot': pd.pivot,
+            'sum_by': _sum_by
+        }
+        if name not in _allowable_transformations:
             raise NotImplementedError(f'Unimplemented transformation {name}')
         self.name = name
-        self._func = _ALLOWABLE_TRANSFORMATIONS[name]
+        self._func = _allowable_transformations[name]
         self.params = params
 
     def transform(self, df):
