@@ -39,3 +39,75 @@ stages:
       md5: 9fe5b0de295c51ab8de27fe74de98dda.dir
       size: 63238
       nfiles: 2
+  refresh_source_capta:
+    cmd: python src/refresh_source_capta.py
+    deps:
+    - path: config/refresh_source_capta
+      md5: 0f0de40904b24e11c79766c93b21166b.dir
+      size: 11174
+      nfiles: 3
+    - path: src/np_scraper.py
+      md5: 71c4ce01ef91ccbb864225483214c7f7
+      size: 5587
+    - path: src/np_source_captaset.py
+      md5: fe9999d59ec70bfa838506fc8c9af0f2
+      size: 2485
+    - path: src/refresh_source_capta.py
+      md5: 55467026d833007e43b0935a8cdf0107
+      size: 1952
+    outs:
+    - path: capta/source
+      md5: 6917197345dde3c4424ae52b3f244580.dir
+      size: 23993
+      nfiles: 1
+  process_capta:
+    cmd: python src/process_capta.py
+    deps:
+    - path: capta/source
+      md5: 6917197345dde3c4424ae52b3f244580.dir
+      size: 23993
+      nfiles: 1
+    - path: config/process_capta
+      md5: d751713988987e9331980363e24189ce.dir
+      size: 0
+      nfiles: 0
+    - path: src/process_capta.py
+      md5: f5172cc976794e36a6f776d05ce12a23
+      size: 2050
+    - path: src/transformations.py
+      md5: dd6a92b4534158c5e75fd5ce1831a271
+      size: 3550
+    outs:
+    - path: capta/processed
+      md5: 9fe5b0de295c51ab8de27fe74de98dda.dir
+      size: 63238
+      nfiles: 2
+  train_models:
+    cmd: python src/train_models.py
+    deps:
+    - path: capta/processed
+      md5: 9fe5b0de295c51ab8de27fe74de98dda.dir
+      size: 63238
+      nfiles: 2
+    - path: config/train_models
+      md5: d751713988987e9331980363e24189ce.dir
+      size: 0
+      nfiles: 0
+    - path: src/national_park_model.py
+      md5: 6af365e521d0f87a25e39dda89133751
+      size: 9008
+    - path: src/train_models.py
+      md5: d8ed0e217d1f75b84032db5c9502a09f
+      size: 2279
+    - path: src/visualization.py
+      md5: 5901377c35f5d62d44fa3e233a7996bb
+      size: 7158
+    outs:
+    - path: models
+      md5: cb6271daba39ba70e38385c38cb6984b.dir
+      size: 368852452
+      nfiles: 26
+    - path: plots
+      md5: 76c15daa7380fdd7375a8c3d15ab3f56.dir
+      size: 2362313
+      nfiles: 26

@@ -1,18 +1,30 @@
 stages:
-  refresh_source:
+  refresh_source_capta:
     cmd: python src/refresh_source_capta.py
     deps:
+    - config/refresh_source_capta
     - src/np_scraper.py
     - src/np_source_captaset.py
     - src/refresh_source_capta.py
-    - config/source_capta
     outs:
     - capta/source
-  process:
+  process_capta:
     cmd: python src/process_capta.py
     deps:
+    - capta/source
+    - config/process_capta
     - src/process_capta.py
     - src/transformations.py
-    - config/processed_capta
     outs:
     - capta/processed
+  train_models:
+    cmd: python src/train_models.py
+    deps:
+    - capta/processed
+    - config/train_models
+    - src/national_park_model.py
+    - src/train_models.py
+    - src/visualization.py
+    outs:
+    - models
+    - plots
