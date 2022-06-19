@@ -29,7 +29,7 @@ class NPSCaptaset(object):
         Args:
             name (str): the abbreviated name for a park (e.g., 'ACAD')
             park_type (str): the type of park (must be listed in
-                config/source_capta/park_types.yaml, e.g., 'NP')
+                config/refresh_source_capta/park_types.yaml, e.g., 'NP')
         """
         park = NationalParkScraper(name=name, park_type=park_type)
         park_url = self.visitor_base_url.replace('{park}', name)

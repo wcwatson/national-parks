@@ -2,6 +2,7 @@
 
 import logging
 import yaml
+import warnings
 
 import hydra
 from hydra.utils import to_absolute_path
@@ -18,19 +19,23 @@ from utils import (
 @hydra.main(config_path='../config', config_name='main', version_base='1.2')
 def main(config):
     setup_logging('refresh_source_capta')
+    warnings.filterwarnings('ignore')
     maybe_create_capta_directory('source')
-    park_set = 'all' if config.refresh_source.refresh_all_parks else 'sample'
+    step_config = config.refresh_source_capta
+
+    # Retrieve parks whose capta are to be curated
+    park_set = 'all' if step_config.refresh_all_parks else 'sample'
     logging.info(f'Refreshing source capta for {park_set} parks')
-    park_list_subconf = config.refresh_source.park_sets
+    park_list_subconf = step_config.park_sets
     park_list_fn = to_absolute_path(park_list_subconf[park_set])
     with open(park_list_fn, 'r') as fi:
         parks = yaml.safe_load(fi)
 
     # Scrape NPS websites for all source capta
     npsc = NPSCaptaset(
-        min_year=config.refresh_source.date_range.min,
-        max_year=config.refresh_source.date_range.max,
-        visitor_base_url=config.refresh_source.nps.monthly_visitors.base_url,
+        min_year=step_config.date_range.min,
+        max_year=step_config.date_range.max,
+        visitor_base_url=step_config.nps.monthly_visitors.base_url,
     )
     for park_name, full_park_name in parks.items():
         _, park_type = parse_park_name(full_park_name)
@@ -44,7 +49,7 @@ def main(config):
             continue
     logging.info('Park source capta refreshed, writing outputs')
     monthly_visitors_fp = to_absolute_path(
-        config.refresh_source.nps.monthly_visitors.output_path
+        step_config.nps.monthly_visitors.output_path
     )
     npsc.write_source_capta(monthly_visitors_fp)
 

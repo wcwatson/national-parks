@@ -49,7 +49,7 @@ class NationalParkScraper(object):
     Attributes:
         name (str): the abbreviated name or 'code' for a park (e.g., 'ACAD')
         park_type (str): the type of park (must be listed in
-            config/source_capta/park_types.yaml, e.g., 'NP')
+            config/refresh_source_capta/park_types.yaml, e.g., 'NP')
         _monthly_visitors (pd.DataFrame): a DataFrame (NB: use
             get_monthly_visitors() to retrieve capta associated with this
             object, do not retrieve it directly)
