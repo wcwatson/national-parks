@@ -1,11 +1,14 @@
 """Common utility functions"""
 
-import datetime
 import logging
 import os
+from typing import Dict
+
+import pandas as pd
 import yaml
 
 from hydra.utils import to_absolute_path
+from omegaconf import ListConfig
 
 
 def setup_logging(step_name):
@@ -17,25 +20,43 @@ def log_job_succeeded():
     logging.info('JOB SUCCEEDED')
 
 
-def now():
-    return datetime.datetime.now().isoformat().replace(':', '-').split('.')[0]
-
-
 def ordinal(n):
     suffixes = {1: 'st', 2: 'nd', 3: 'rd'}
     return str(n) + suffixes.get(4 if 11 <= n % 100 < 14 else n % 10, 'th')
 
 
 def maybe_create_capta_directory(stage):
+    """Creates a subdirectory under capta/, since dvc deletes any existing
+    output directory upon running a stage.
+    """
     if stage not in ['source', 'processed']:
         raise ValueError('Unrecognized stage')
     abs_path = to_absolute_path(f'capta/{stage}')
     os.makedirs(abs_path, exist_ok=True)
 
 
-with open('config/source_capta/park_types.yaml', 'r') as fi:
+def get_step_inputs(input_config):
+    """Retrieves and caches input DataFrames.
+
+    Args:
+        input_config (ListConfig): a list of objects with "name" and "path"
+            attributes
+
+    Returns:
+        Dict[str, pd.DataFrame]: a structure of the form {name: df} covering all
+            input objects
+    """
+    return {
+        item.name: pd.read_csv(to_absolute_path(item.path))
+        for item in input_config
+    }
+
+
+# It ends up being more efficient to keep these in memory rather than read them
+# each time their contents are required
+with open('config/refresh_source_capta/park_types.yaml', 'r') as fi:
     _PARK_TYPES = yaml.safe_load(fi)
-with open('config/source_capta/all_parks.yaml', 'r') as fi:
+with open('config/refresh_source_capta/all_parks.yaml', 'r') as fi:
     _PARK_NAMES = yaml.safe_load(fi)
 
 
@@ -67,6 +88,6 @@ def get_full_park_name(park_name):
     Returns:
         str: the park's full name
     """
-    long_park_name, park_type = parse_park_name(park_name)
+    long_park_name, park_type = parse_park_name(_PARK_NAMES.get(park_name))
     long_park_type = get_long_park_type(park_type)
     return f'{long_park_name} {long_park_type}'
