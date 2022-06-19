@@ -1,8 +1,11 @@
-# Main configuration file for national-parks project
+# Main configuration file for national-parks project. Each top-level entry
+# matches a DVC stage.
 
-refresh_source_capta:
+refresh_source_capta:  # TODO (WW): consider offloading these as well, depending on how this step evolves
   # Flag for refreshing all parks or a sample thereof
   refresh_all_parks: False
+  # Park names corresponding to the full captaset and to a sample useful for
+  # development and testing
   park_sets:
     all: config/refresh_source_capta/all_parks.yaml
     sample: config/refresh_source_capta/sample_parks.yaml
@@ -19,95 +22,10 @@ refresh_source_capta:
       base_url: https://irma.nps.gov/STATS/SSRSReports/Park%20Specific%20Reports/Summary%20of%20Visitor%20Use%20By%20Month%20and%20Year%20(1979%20-%20Last%20Calendar%20Year)?Park={park}
       output_path: capta/source/nps_visitor_use.csv
 
-process_capta:  # TODO (WW): move this to separate config files, just point to them here
-  # Source capta used to "prime the pump" for the processing steps outlined
-  # below
-  inputs:
-    - name: nps_monthly_visitors
-      path: capta/source/nps_monthly_visitors.csv
-  # Each step takes the input and executes the indicated sequence of
-  # transformations, caching the processed result so that it can be used as the
-  # input for later steps. If an output_path is indicated, the processed result
-  # is also written there.
-  # NB: each step must have at least one transformation - if no "real"
-  # transformations need to be executed then an "identity" transformation should
-  # still be executed
-  processing_steps:
-    - name: melt_monthly_visitors
-      input: nps_monthly_visitors  # TODO (WW): figure out how to have multiple inputs for a step
-      transformations:
-        - name: columns_to_lowercase
-        - name: melt
-          params:
-            id_vars:
-              - park_name
-              - park_type
-              - year
-            var_name: month
-            value_name: visitors
-        - name: create_dt_pk
-          params:
-            year_col: year
-            month_col: month
-      output: tall_monthly_visitors
-    - name: pivot_visitors_by_park
-      input: tall_monthly_visitors
-      transformations:
-        - name: pivot
-          params:
-            index: dt_pk
-            columns: park_name
-            values: visitors
-      output: monthly_visitors_by_park
-      output_path: capta/processed/monthly_visitors_by_park.csv
-    - name: pivot_visitors_by_park_type
-      input: tall_monthly_visitors
-      transformations:
-        - name: sum_by
-          params:
-            by:
-              - park_type
-              - dt_pk
-            summands:
-              - visitors
-        - name: pivot
-          params:
-            index: dt_pk
-            columns: park_type
-            values: visitors
-      output: monthly_visitors_by_park_type
-      output_path: capta/processed/monthly_visitors_by_park_type.csv
+process_capta:
+  inputs: config/process_capta/inputs.yaml
+  steps: config/process_capta/steps.yaml
 
-train_models: # TODO (WW): offload these to separate config files
-  inputs:
-    - name: visitors_by_park
-      path: capta/processed/monthly_visitors_by_park.csv
-    - name: visitors_by_park_type
-      path: capta/processed/monthly_visitors_by_park_type.csv
-  model_recipes:
-    - name: SARIMAXs for Individual Parks
-      input: visitors_by_park
-      outputs_subdir: parks
-      algorithm: arima
-      params:
-#        exog_vars: TODO (WW): add list when available
-        test_size: 0.2
-        m: 12
-        df_alpha: 0.01
-        max_diffs: 3
-        max_order: 8
-        arima_ci_alpha: 0.05
-        plot_train_limit: 2
-    - name: SARIMAXs for Park Types
-      input: visitors_by_park_type
-      outputs_subdir: park_types
-      algorithm: arima
-      params:
-        #        exog_vars: TODO (WW): add list when available
-        test_size: 0.2
-        m: 12
-        df_alpha: 0.01
-        max_diffs: 3
-        max_order: 8
-        arima_ci_alpha: 0.05
-        plot_train_limit: 2
+train_models:
+  inputs: config/train_models/inputs.yaml
+  recipes: config/train_models/recipes.yaml

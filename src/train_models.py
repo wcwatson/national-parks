@@ -9,13 +9,18 @@ from hydra.utils import to_absolute_path
 import pandas as pd
 
 from national_park_model import NationalParkModel
-from utils import get_step_inputs, log_job_succeeded, setup_logging
+from utils import (
+    get_step_inputs,
+    log_job_succeeded,
+    read_config_file,
+    setup_logging
+)
 
 
 def _maybe_make_output_directories():
     """Helper function to create directories for step outputs. Exists purely to
-    make the structure of this step's main() function parallel to those of other
-    steps.
+    make the structure of this step's main() function parallel to those of
+    other steps.
     """
     for directory in ['models', 'plots']:
         abs_path = to_absolute_path(directory)
@@ -44,25 +49,28 @@ def main(config):
     setup_logging('train_models')
     warnings.filterwarnings('ignore')
     _maybe_make_output_directories()
-    step_config = config.train_models
+    stage_config = config.train_models
+    inputs_config = read_config_file(to_absolute_path(stage_config.inputs))
+    recipes_config = read_config_file(to_absolute_path(stage_config.recipes))
 
-    # Retrieve input capta and perform simple preparations for modeling
-    modeling_dfs = get_step_inputs(step_config.inputs)
+    # At this stage only simple transformations, such as setting a datetime
+    # index from an already-existing column, should be performed in preparation
+    # for modeling. Anything more complex should have already been handled in
+    # the previous DVC stage.
+    modeling_dfs = get_step_inputs(inputs_config)
     modeling_dfs = {
         k: _time_index_dataframe(df)
         for k, df in modeling_dfs.items()
     }
     logging.info('Modeling capta retrieved')
 
-    # Apply all modeling procedures outlined in configuration file
-    # TODO (WW): adjust to configs following reallocation
-    for model_recipe in step_config.model_recipes:
-        logging.info(f'Building {model_recipe.name}')
-        df = modeling_dfs[model_recipe.input]
+    for recipe in recipes_config:
+        logging.info(f'Building {recipe.name}')
+        df = modeling_dfs[recipe.input]
         model = NationalParkModel(
-            algorithm_name=model_recipe.algorithm,
-            outputs_subdir=model_recipe.outputs_subdir,
-            params=model_recipe.params
+            algorithm_name=recipe.algorithm,
+            outputs_subdir=recipe.outputs_subdir,
+            params=recipe.params
         )
         model.fit_and_evaluate(df)
 

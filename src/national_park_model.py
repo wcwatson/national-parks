@@ -1,16 +1,15 @@
 """Class for managing model training. Note that all "helper" training functions
 must take a DataFrame as input, as well as an optional argument named
 outputs_subdir, which specifies identically named subdirectories of models/ and
-plots/ where relevant artifacts may be written.
+plots/ where relevant artifacts may be written. Additional keyword arguments
+may also be required and are passed in with the ** unpacking operator.
 """
 
 import joblib
 import logging
 import os
-from typing import Tuple
 
 from hydra.utils import to_absolute_path
-import pandas as pd
 from pmdarima.arima import AutoARIMA
 import statsmodels.api as sm
 
@@ -18,8 +17,8 @@ from visualization import plot_differenced_ts, plot_forecast
 
 
 def _get_output_dirs(name, outputs_subdir=None):
-    """Helper function to get and create output directories for models and plots
-    associated with a single modeling effort.
+    """Helper function to get and create output directories for models and
+    plots associated with a single modeling effort.
 
     Args:
         name (str): the name of the modeling effort
@@ -27,7 +26,8 @@ def _get_output_dirs(name, outputs_subdir=None):
             plots/ in which the other directories should be placed
 
     Returns:
-        str, str: the (absolute) paths in models/ and plots/, respectively
+        Tuple[str, str]: the (absolute) paths of the output directories in
+            models/ and plots/, respectively
     """
     if outputs_subdir is not None:
         model_output_path = os.path.join('models', outputs_subdir, name)
@@ -86,19 +86,20 @@ def _train_and_evaluate_arima_models(
         df (pd.DataFrame): a DataFrame with one or more time series and
             (optionally) exogenous variables
         outputs_subdir (str): optional subdirectory within models/ and plots/
-            where output artifacts should be written, if None then all artifacts
-            will be written at the top level of the relevant directory
+            where output artifacts should be written, if None then all
+            artifacts will be written at the top level of the relevant
+            directory
         ts_cols (list): a list of columns to be modeled as the values of a time
             series, defaults to all columns in df that are not included in
             exog_vars
-        exog_vars (list): an optional list of columns to be treated as exogenous
-            variables in each model
+        exog_vars (list): an optional list of columns to be treated as
+            exogenous variables in each model
         test_size (float | int): if <1 the proportion of each time series to be
-            held out as a test set; if an integer the number of steps to be held
-            out as a test set
+            held out as a test set; if an integer the number of steps to be
+            held out as a test set
         m (int): the period for seasonal differencing (see the pmdarima
-            documentation for more details) - note that this seasonality will be
-            removed from the time series prior to performing the DF test and
+            documentation for more details) - note that this seasonality will
+            be removed from the time series prior to performing the DF test and
             plotting (P)ACF curves
         df_alpha (float): the desired significance level of the Dickey-Fuller
             test statistic before differencing halts
@@ -145,7 +146,10 @@ def _train_and_evaluate_arima_models(
         # Remove any indicated seasonality and iteratively evaluate the
         # Dickey-Fuller test statistic on increasingly differenced training
         # series until significance is achieved
-        diff_ts = (train_ts - train_ts.shift(m)).dropna() if m > 1 else train_ts
+        diff_ts = (
+            (train_ts - train_ts.shift(m)).dropna() if m > 1
+            else train_ts
+        )
         diff_ts, diffs, df_p_value = _detrend_time_series(
             diff_ts, alpha=df_alpha, max_diffs=max_diffs
         )

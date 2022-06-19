@@ -1,0 +1,72 @@
+# List of processing steps, each of which executes the indicated sequence of
+# transformations on the indicated inputs, caches the result so that it can be
+# used as the input for subsequent steps, and if indicated also writes the
+# result to disk. Each step should include the following elements:
+#   * name: an identifying name for the step, used primarily for logging and
+#     debugging
+#   * input: the name of an artifact to be transformed by the step, which can
+#     either be the "name" of an object listed in
+#     config/process_capta/inputs.yaml or the "output" of a previously executed
+#     processing step
+#     TODO (WW): figure out how to have multiple inputs for a step
+#   * transformations: a list of transformations to be applied, each of which
+#     should contain the following elements:
+#       * name: the name of the transformation, which should be one of the
+#         options listed in the _allowable_transformations object in the
+#         __init__() method of the src.transformations.Transformation() class
+#       * params (optional): any keyword arguments required by the indicated
+#         transformation
+#     NB: each step must have at least one transformation - if no "real"
+#     transformations need to be executed then the "identity" transformation
+#     should still be executed
+#   * output: an identifying name for the artifact resulting from this step, so
+#     that it can be cached and referenced in subsequent processing steps
+#   * output_path (optional): if present, the artifact resulting from this step
+#     will also be written to disk at this path
+
+- name: melt_monthly_visitors
+  input: nps_monthly_visitors
+  transformations:
+    - name: columns_to_lowercase
+    - name: melt
+      params:
+        id_vars:
+          - park_name
+          - park_type
+          - year
+        var_name: month
+        value_name: visitors
+    - name: create_dt_pk
+      params:
+        year_col: year
+        month_col: month
+  output: tall_monthly_visitors
+
+- name: pivot_visitors_by_park
+  input: tall_monthly_visitors
+  transformations:
+    - name: pivot
+      params:
+        index: dt_pk
+        columns: park_name
+        values: visitors
+  output: monthly_visitors_by_park
+  output_path: capta/processed/monthly_visitors_by_park.csv
+
+- name: pivot_visitors_by_park_type
+  input: tall_monthly_visitors
+  transformations:
+    - name: sum_by
+      params:
+        by:
+          - park_type
+          - dt_pk
+        summands:
+          - visitors
+    - name: pivot
+      params:
+        index: dt_pk
+        columns: park_type
+        values: visitors
+  output: monthly_visitors_by_park_type
+  output_path: capta/processed/monthly_visitors_by_park_type.csv

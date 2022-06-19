@@ -2,13 +2,11 @@
 
 import logging
 import os
-from typing import Dict
-
-import pandas as pd
 import yaml
 
 from hydra.utils import to_absolute_path
-from omegaconf import ListConfig
+from omegaconf import OmegaConf
+import pandas as pd
 
 
 def setup_logging(step_name):
@@ -18,6 +16,19 @@ def setup_logging(step_name):
 
 def log_job_succeeded():
     logging.info('JOB SUCCEEDED')
+
+
+def read_config_file(path):
+    """Helper function to read a YAML configuration file.
+
+    Args:
+        path (str): path relative to the national-parks working directory
+
+    Returns:
+        DictConfig | ListConfig: a structured object from the indicated file
+    """
+    abs_path = to_absolute_path(path)
+    return OmegaConf.load(abs_path)
 
 
 def ordinal(n):
@@ -35,20 +46,20 @@ def maybe_create_capta_directory(stage):
     os.makedirs(abs_path, exist_ok=True)
 
 
-def get_step_inputs(input_config):
+def get_step_inputs(inputs_config):
     """Retrieves and caches input DataFrames.
 
     Args:
-        input_config (ListConfig): a list of objects with "name" and "path"
+        inputs_config (ListConfig): a list of objects with "name" and "path"
             attributes
 
     Returns:
-        Dict[str, pd.DataFrame]: a structure of the form {name: df} covering all
-            input objects
+        Dict[str, pd.DataFrame]: a structure of the form {name: df} covering
+            all input objects
     """
     return {
         item.name: pd.read_csv(to_absolute_path(item.path))
-        for item in input_config
+        for item in inputs_config
     }
 
 
