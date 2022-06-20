@@ -3,9 +3,8 @@ stages:
     cmd: python src/refresh_source_capta.py
     deps:
     - config/refresh_source_capta
-    - src/np_scraper.py
-    - src/np_source_captaset.py
     - src/refresh_source_capta.py
+    - src/national_parks/nps
     outs:
     - capta/source
   process_capta:
@@ -14,7 +13,7 @@ stages:
     - capta/source
     - config/process_capta
     - src/process_capta.py
-    - src/transformations.py
+    - src/national_parks/processing
     outs:
     - capta/processed
   train_models:
@@ -22,9 +21,9 @@ stages:
     deps:
     - capta/processed
     - config/train_models
-    - src/national_park_model.py
     - src/train_models.py
-    - src/visualization.py
+    - src/national_parks/model
+    - src/national_parks/visualization
     outs:
     - models
     - plots

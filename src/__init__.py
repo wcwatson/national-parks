@@ -1,1 +1,1 @@
-"""Source code for National Parks project"""
+"""Source code for national-parks project."""

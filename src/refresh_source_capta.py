@@ -1,19 +1,17 @@
 """Driver script to refresh source capta."""
 
 import logging
-import yaml
 import warnings
 
 import hydra
 from hydra.utils import to_absolute_path
 
-from np_source_captaset import NPSCaptaset
-from utils import (
-    log_job_succeeded,
-    maybe_create_capta_directory,
-    setup_logging,
-    parse_park_name
+from national_parks.nps import NPSCaptaset
+from national_parks.utils.io import (
+    maybe_create_capta_directory, read_config_file
 )
+from national_parks.utils.logging import log_job_succeeded, setup_logging
+from national_parks.utils.park_names import get_park_type
 
 
 @hydra.main(config_path='../config', config_name='main', version_base='1.2')
@@ -27,9 +25,7 @@ def main(config):
     park_set = 'all' if step_config.refresh_all_parks else 'sample'
     logging.info(f'Refreshing source capta for {park_set} parks')
     park_list_subconf = step_config.park_sets
-    park_list_fn = to_absolute_path(park_list_subconf[park_set])
-    with open(park_list_fn, 'r') as fi:
-        parks = yaml.safe_load(fi)
+    parks = read_config_file(park_list_subconf[park_set])
 
     # Scrape NPS websites for all source capta
     npsc = NPSCaptaset(
@@ -37,14 +33,14 @@ def main(config):
         max_year=step_config.date_range.max,
         visitor_base_url=step_config.nps.monthly_visitors.base_url,
     )
-    for park_name, full_park_name in parks.items():
-        _, park_type = parse_park_name(full_park_name)
+    for park_code, nps_park_name in parks.items():
+        park_type = get_park_type(nps_park_name)
         try:
-            npsc.add_and_populate_park(name=park_name, park_type=park_type)
-            logging.info(f'Successfully added source capta for {park_name}')
+            npsc.add_and_populate_park(name=park_code, park_type=park_type)
+            logging.info(f'Successfully added source capta for {park_code}')
         except (KeyError, ValueError) as e:
             logging.info(
-                f'Error encountered adding source capta for {park_name} - {e}'
+                f'Error encountered adding source capta for {park_code} - {e}'
             )
             continue
     logging.info('Park source capta refreshed, writing outputs')

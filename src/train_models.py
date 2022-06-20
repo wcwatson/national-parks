@@ -8,13 +8,9 @@ import hydra
 from hydra.utils import to_absolute_path
 import pandas as pd
 
-from national_park_model import NationalParkModel
-from utils import (
-    get_step_inputs,
-    log_job_succeeded,
-    read_config_file,
-    setup_logging
-)
+from national_parks.model import NationalParksModel
+from national_parks.utils.io import get_step_inputs, read_config_file
+from national_parks.utils.logging import log_job_succeeded, setup_logging
 
 
 def _maybe_make_output_directories():
@@ -67,7 +63,7 @@ def main(config):
     for recipe in recipes_config:
         logging.info(f'Building {recipe.name}')
         df = modeling_dfs[recipe.input]
-        model = NationalParkModel(
+        model = NationalParksModel(
             algorithm_name=recipe.algorithm,
             outputs_subdir=recipe.outputs_subdir,
             params=recipe.params

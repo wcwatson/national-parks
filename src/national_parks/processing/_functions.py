@@ -1,12 +1,11 @@
-"""Class for managing transformations to source capta. Note that all "helper
-functions" must take a DataFrame as their first argument and return a
-transformed copy of that DataFrame.
+"""Helper module for managing the user-defined functions associated with the
+Transformation class.
 """
 
 import pandas as pd
 
 
-def _columns_to_lowercase(df):
+def columns_to_lowercase(df):
     """Changes all column names in a DataFrame to lowercase.
 
     Args:
@@ -18,7 +17,7 @@ def _columns_to_lowercase(df):
     return df.rename(columns={c: c.lower() for c in df.columns})
 
 
-def _create_dt_pk(df, year_col, month_col, day_col=None):
+def create_dt_pk(df, year_col, month_col, day_col=None):
     """Consolidates component time columns into a single pandas datetime column
     and drops the original columns. The new column will be called "dt_pk",
     indicating a "primary key" datetime column for time series modeling, though
@@ -51,12 +50,12 @@ def _create_dt_pk(df, year_col, month_col, day_col=None):
     return df.drop(columns=['year', 'month', 'day'])
 
 
-def _identity(df):
+def identity(df):
     """Identity transformation to call if nothing else is needed."""
     return df
 
 
-def _sum_by(df, by, summands):
+def sum_by(df, by, summands):
     """Wrapper function for summing columns via pandas groupby.
 
     Args:
@@ -71,40 +70,3 @@ def _sum_by(df, by, summands):
     list_by = [b for b in by]
     list_summands = [s for s in summands]
     return df.groupby(by=list_by, as_index=False)[list_summands].sum()
-
-
-class Transformation(object):
-    """Object for managing transformations in a configurable manner.
-
-    Attributes:
-        name (str): the name of the transformation
-        params (dict): keyword arguments to be passed to the transformation
-    """
-
-    def __init__(self, name, params=None):
-        _allowable_transformations = {
-            'columns_to_lowercase': _columns_to_lowercase,
-            'create_dt_pk': _create_dt_pk,
-            'identity': _identity,
-            'melt': pd.melt,
-            'pivot': pd.pivot,
-            'sum_by': _sum_by
-        }
-        if name not in _allowable_transformations:
-            raise NotImplementedError(f'Unimplemented transformation {name}')
-        self.name = name
-        self._func = _allowable_transformations[name]
-        self.params = params
-
-    def transform(self, df):
-        """Transforms a DataFrame.
-
-        Args:
-            df (pd.DataFrame): a DataFrame
-
-        Returns:
-            pd.DataFrame: a transformed copy of df
-        """
-        if self.params is not None:
-            return self._func(df, **self.params)
-        return self._func(df)
