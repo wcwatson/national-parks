@@ -1,9 +1,9 @@
 # List of processed capta used as inputs to the model training stage. Each item
 # should include the following elements:
 #   * name: an identifying name for this artifact that can be referenced in the
-#     processing steps
+#       processing steps
 #   * path: the path relative to the national-parks directory where the source
-#     capta may be found
+#       capta may be found
 - name: visitors_by_park
   path: capta/processed/monthly_visitors_by_park.csv
 - name: visitors_by_park_type

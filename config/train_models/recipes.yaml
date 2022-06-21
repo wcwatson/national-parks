@@ -2,18 +2,20 @@
 # indicated inputs and writes any resultant artifacts to the models/ and plots/
 # directories. Each recipe should include the following elements:
 #   * name: an identifying name for the recipe, used primarily for logging and
-#     debugging
+#       debugging
 #   * input: the name of a processed artifact to be used for modeling, matching
-#     the "name" of an object listed in config/train_model/inputs.yaml
+#       the "name" of an object listed in config/train_model/inputs.yaml
 #   * outputs_subdir (optional): if present, subdirectories of this name will be
-#     added to models/ and plots/ to help organize outputs from multiple
-#     modeling exercises; while use of this parameter is technically optional it
-#     is highly recommended for organizational purposes
+#       added to models/ and plots/ to help organize outputs from multiple
+#       modeling exercises; while use of this parameter is technically optional
+#       it is highly recommended for organizational purposes
 #   * algorithm: the name of an ML modeling process to be applied, which should
-#     be one of the options listed in the _allowable_algorithms object in the
-#     __init__() method of the src.national_park_model.NationalParksModel() class
+#       be one of the options listed in the _allowable_algorithms object in the
+#       __init__() method of the src.national_park_model.NationalParksModel
+#       class
 #   * params (optional): any keyword arguments required by the indicated ML
-#     algorithm, for which see the implementations in src/national_parks_model.py
+#       algorithm, for which see the implementations in
+#       src/national_parks_model.py
 
 - name: SARIMAXs for Individual Parks
   input: visitors_by_park

@@ -3,26 +3,26 @@
 # used as the input for subsequent steps, and if indicated also writes the
 # result to disk. Each step should include the following elements:
 #   * name: an identifying name for the step, used primarily for logging and
-#     debugging
+#       debugging
 #   * input: the name of an artifact to be transformed by the step, which can
-#     either be the "name" of an object listed in
-#     config/process_capta/inputs.yaml or the "output" of a previously executed
-#     processing step
-#     TODO (WW): figure out how to have multiple inputs for a step
+#       either be the "name" of an object listed in
+#       config/process_capta/inputs.yaml or the "output" of a previously
+#       executed processing step
+#       TODO (WW): figure out how to have multiple inputs for a step
 #   * transformations: a list of transformations to be applied, each of which
-#     should contain the following elements:
-#       * name: the name of the transformation, which should be one of the
-#         options listed in the _allowable_transformations object in the
-#         __init__() method of the src.transformations.Transformation() class
-#       * params (optional): any keyword arguments required by the indicated
-#         transformation
-#     NB: each step must have at least one transformation - if no "real"
-#     transformations need to be executed then the "identity" transformation
-#     should still be executed
+#       should contain the following elements:
+#         * name: the name of the transformation, which should be one of the
+#             options listed in the _allowable_transformations object in the
+#             __init__() method of the src.transformations.Transformation class
+#         * params (optional): any keyword arguments required by the indicated
+#             transformation
+#       NB: each step must have at least one transformation - if no "real"
+#       transformations need to be executed then the "identity" transformation
+#       should still be executed
 #   * output: an identifying name for the artifact resulting from this step, so
-#     that it can be cached and referenced in subsequent processing steps
+#       that it can be cached and referenced in subsequent processing steps
 #   * output_path (optional): if present, the artifact resulting from this step
-#     will also be written to disk at this path
+#       will also be written to disk at this path
 
 - name: melt_monthly_visitors
   input: nps_monthly_visitors

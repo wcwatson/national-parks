@@ -1,8 +1,8 @@
 # List of source capta used as "first inputs" to the processing stage. Each item
 # should include the following elements:
 #   * name: an identifying name for this artifact that can be referenced in the
-#     processing steps
+#       processing steps
 #   * path: the path relative to the national-parks directory where the source
-#     capta may be found
+#       capta may be found
 - name: nps_monthly_visitors
   path: capta/source/nps_monthly_visitors.csv
