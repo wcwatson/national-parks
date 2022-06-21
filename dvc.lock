@@ -32,10 +32,83 @@ stages:
       md5: 848115956539cbbe2fca04e2868dcc56
       size: 1634
     - path: src/transformations.py
-      md5: c5ddc13a2664c3b8af8474f6080a9247
-      size: 3330
+      md5: e310f775638f06a4523c5777ab15c98f
+      size: 3329
     outs:
     - path: capta/processed
-      md5: 1d6a8db0d3266f0a87098823957f1799.dir
+      md5: 9fe5b0de295c51ab8de27fe74de98dda.dir
       size: 63238
       nfiles: 2
+  refresh_source_capta:
+    cmd: python src/refresh_source_capta.py
+    deps:
+    - path: config/refresh_source_capta
+      md5: 3979f3b3f9e079987e326bd570a193d2.dir
+      size: 11253
+      nfiles: 3
+    - path: src/national_parks/nps
+      md5: d794ce25888521130cfa07a5c963cf4e.dir
+      size: 16747
+      nfiles: 6
+    - path: src/refresh_source_capta.py
+      md5: cc28db7fdef5cd75934ccff57ffe3e36
+      size: 1956
+    outs:
+    - path: capta/source
+      md5: 6917197345dde3c4424ae52b3f244580.dir
+      size: 23993
+      nfiles: 1
+  process_capta:
+    cmd: python src/process_capta.py
+    deps:
+    - path: capta/source
+      md5: 6917197345dde3c4424ae52b3f244580.dir
+      size: 23993
+      nfiles: 1
+    - path: config/process_capta
+      md5: 7a9c5bbf919d20037ab41145cfd7a257.dir
+      size: 3101
+      nfiles: 2
+    - path: src/national_parks/processing
+      md5: 3881da2a17242da11b3cae827a9abd8f.dir
+      size: 8679
+      nfiles: 6
+    - path: src/process_capta.py
+      md5: 6839fae81d481bea488b44e154cae3f1
+      size: 2464
+    outs:
+    - path: capta/processed
+      md5: 9fe5b0de295c51ab8de27fe74de98dda.dir
+      size: 63238
+      nfiles: 2
+  train_models:
+    cmd: python src/train_models.py
+    deps:
+    - path: capta/processed
+      md5: 9fe5b0de295c51ab8de27fe74de98dda.dir
+      size: 63238
+      nfiles: 2
+    - path: config/train_models
+      md5: c8b18ad09192a6a5aaf27d905addfa0f.dir
+      size: 2259
+      nfiles: 2
+    - path: src/national_parks/model
+      md5: 951b2e3f1f8530b2a2d045e112d59d80.dir
+      size: 20836
+      nfiles: 6
+    - path: src/national_parks/visualization
+      md5: 694771ec474f6b040519e81f793239b2.dir
+      size: 18972
+      nfiles: 8
+    - path: src/train_models.py
+      md5: 731dd895cda8e5ce62a92f43c81a7cb3
+      size: 2528
+    outs:
+    - path: models
+      md5: 16f3de00a5f2af95ef6eb59a5a2b5e20.dir
+      size: 368852452
+      nfiles: 26
+    - path: plots
+      md5: ded97ba8eadc49c63e6c6551d7bebfe0.dir
+      size: 4086744
+      nfiles: 39

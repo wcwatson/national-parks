@@ -1,20 +1,22 @@
 """Class for managing source capta from the National Parks Service."""
 
+from typing import Dict
+
 import pandas as pd
 
-from np_scraper import NationalParkScraper
+from .park_scraper import NPSParkScraper
 
 
 class NPSCaptaset(object):
     """Object for managing source capta from the National Parks Service.
 
     Attributes:
-        visitor_base_url (str): a base URL for retrieving monthly
-            visitor information for every park
         min_year (int): the earliest year of capta to retrieve
         max_year (int): the latest year of capta to retrieve
-        parks (dict[str:NationalParkScraper]): an indexed collection of
-            NationalParkScraper objects
+        visitor_base_url (str): a base URL for retrieving monthly
+            visitor information for every park
+        parks (Dict[str, NPSParkScraper]): an indexed collection of
+            NPSParkScraper objects
     """
 
     def __init__(self, min_year, max_year, visitor_base_url):
@@ -24,14 +26,14 @@ class NPSCaptaset(object):
         self.parks = {}
 
     def add_and_populate_park(self, name, park_type):
-        """Adds a populated NationalParkScraper object to the captaset.
+        """Adds a populated NPSParkScraper to the captaset.
 
         Args:
             name (str): the abbreviated name for a park (e.g., 'ACAD')
             park_type (str): the type of park (must be listed in
-                config/source_capta/park_types.yaml, e.g., 'NP')
+                config/refresh_source_capta/park_types.yaml, e.g., 'NP')
         """
-        park = NationalParkScraper(name=name, park_type=park_type)
+        park = NPSParkScraper(name=name, park_type=park_type)
         park_url = self.visitor_base_url.replace('{park}', name)
         park.scrape_monthly_visitors(
             park_url=park_url, max_year=self.max_year, min_year=self.min_year

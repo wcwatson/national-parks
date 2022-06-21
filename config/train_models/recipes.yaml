@@ -1,0 +1,46 @@
+# List of "model recipes," each of which builds one or more ML models using the
+# indicated inputs and writes any resultant artifacts to the models/ and plots/
+# directories. Each recipe should include the following elements:
+#   * name: an identifying name for the recipe, used primarily for logging and
+#       debugging
+#   * input: the name of a processed artifact to be used for modeling, matching
+#       the "name" of an object listed in config/train_model/inputs.yaml
+#   * outputs_subdir (optional): if present, subdirectories of this name will be
+#       added to models/ and plots/ to help organize outputs from multiple
+#       modeling exercises; while use of this parameter is technically optional
+#       it is highly recommended for organizational purposes
+#   * algorithm: the name of an ML modeling process to be applied, which should
+#       be one of the options listed in the _allowable_algorithms object in the
+#       __init__() method of the src.national_park_model.NationalParksModel
+#       class
+#   * params (optional): any keyword arguments required by the indicated ML
+#       algorithm, for which see the implementations in
+#       src/national_parks_model.py
+
+- name: SARIMAXs for Individual Parks
+  input: visitors_by_park
+  outputs_subdir: parks
+  algorithm: arima
+  params:
+    # exog_vars: TODO (WW): add list when available
+    test_size: 0.2
+    m: 12
+    df_alpha: 0.01
+    max_diffs: 3
+    max_order: 8
+    arima_ci_alpha: 0.05
+    plot_train_limit: 2
+
+- name: SARIMAXs for Park Types
+  input: visitors_by_park_type
+  outputs_subdir: park_types
+  algorithm: arima
+  params:
+    # exog_vars: TODO (WW): add list when available
+    test_size: 0.2
+    m: 12
+    df_alpha: 0.01
+    max_diffs: 3
+    max_order: 8
+    arima_ci_alpha: 0.05
+    plot_train_limit: 2
